@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Настя: Последняя надежда</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #111;
+      color: #eee;
+      font-family: 'Cinzel', serif;
+      background-image: linear-gradient(rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.85)), url('https://cdn.pixabay.com/photo/2021/01/24/14/55/castle-5944651_1280.jpg');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      overflow-x: hidden;
+    }
+    @import url('https://fonts.googleapis.com/css2?family=Cinzel&display=swap');
+    #game {
+      padding: 20px;
+      max-width: 480px;
+      margin: auto;
+    }
+    .scene {
+      margin-bottom: 20px;
+      background-color: rgba(20, 20, 20, 0.8);
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px #3c1c1c;
+      font-size: 16px;
+    }
+    .choices button {
+      width: 100%;
+      margin: 10px 0;
+      padding: 14px;
+      background: linear-gradient(145deg, #2c1a1a, #1a1010);
+      color: #f5f5f5;
+      border: 2px solid #6b3e3e;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 16px;
+      font-family: 'Cinzel', serif;
+      transition: all 0.3s ease;
+      box-shadow: 0 0 10px rgba(255, 0, 0, 0.1);
+    }
+    .choices button:hover {
+      background: #3a1c1c;
+      border-color: #a65a5a;
+      color: #ffdddd;
+      box-shadow: 0 0 20px rgba(255, 0, 0, 0.3);
+    }
+    .character {
+      width: 100px;
+      border-radius: 12px;
+      box-shadow: 0 0 15px #222;
+    }
+    #character-box {
+      display: flex;
+      gap: 20px;
+      align-items: flex-end;
+      margin-bottom: 20px;
+    }
+    .masha {
+      width: 80px;
+      opacity: 0;
+      transition: opacity 0.5s;
+    }
+    .masha.visible {
+      opacity: 1;
+    }
+    audio {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <!-- Фоновая музыка -->
+  <audio autoplay loop volume="0.5">
+    <source src="https://cdn.pixabay.com/audio/2022/11/24/audio_2687be3d0e.mp3" type="audio/mpeg">
+    Ваш браузер не поддерживает аудиоэлемент.
+  </audio>
+
+  <div id="game">
+    <div id="character-box">
+      <img src="1000076040.png" alt="Настя" class="character" />
+      <img id="masha-img" src="1000076039.png" alt="Маша" class="masha" />
+    </div>
+    <div id="scene" class="scene"></div>
+    <div id="choices" class="choices"></div>
+  </div>
+
+  <script>
+    const scenes = {
+      start: {
+        text: "Настя (18 лет) просыпается в холодной квартире. Рядом спит её младшая сестра Маша (10 лет). Снаружи слышны стоны зомби.",
+        choices: [
+          { text: "Обыскать квартиру одной", next: "search_alone" },
+          { text: "Разбудить Машу и выйти вместе", next: "leave_together" }
+        ]
+      },
+      search_alone: {
+        text: "Настя нашла консервы и бинты. Но кто-то ломится в дверь...",
+        choices: [
+          { text: "Спрятаться с Машей", next: "hide_with_masha" },
+          { text: "Отвлечь зомби", next: "distract_zombie" }
+        ]
+      },
+      leave_together: {
+        text: "Маша: \"Настя... мне страшно...\"\n\nНа улице тихо. Маша устала и идёт медленно.",
+        speaker: "masha",
+        choices: [
+          { text: "Найти ближайшее укрытие", next: "find_shelter" },
+          { text: "Нести Машу на руках", next: "carry_masha" }
+        ]
+      },
+      hide_with_masha: {
+        text: "Маша: \"Мы спрятались, но он почти нас нашёл...\"\n\nОни успели спрятаться. Зомби ушёл. Нужно искать новое укрытие.",
+        speaker: "masha",
+        choices: [
+          { text: "Идти в сторону школы", next: "school_group" }
+        ]
+      },
+      distract_zombie: {
+        text: "Настя отвлекла зомби, но получила рану. Удалось сбежать, но теперь нужна медицинская помощь.",
+        choices: [
+          { text: "Идти в сторону школы", next: "school_group" }
+        ]
+      },
+      find_shelter: {
+        text: "Они нашли старую школу. Там скрываются подростки, которые приняли их с осторожностью.",
+        choices: [
+          { text: "Остаться с группой", next: "stay_with_group" },
+          { text: "Уйти дальше", next: "go_alone" }
+        ]
+      },
+      carry_masha: {
+        text: "Маша: \"Ты снова меня спасла...\"\n\nНастя устала, но добралась до школы. Их впустили. Маша в безопасности.",
+        speaker: "masha",
+        choices: [
+          { text: "Остаться с группой", next: "stay_with_group" }
+        ]
+      },
+      school_group: {
+        text: "Подростки приняли их. Один из них рассказал о лаборатории, где разрабатывали вакцину...",
+        choices: [
+          { text: "Идти туда одной", next: "final_sacrifice" },
+          { text: "Взять Машу с собой", next: "final_together" }
+        ]
+      },
+      stay_with_group: {
+        text: "Настя узнала о лаборатории неподалёку. Есть шанс спасти Машу и других...",
+        choices: [
+          { text: "Идти туда одной", next: "final_sacrifice" },
+          { text: "Взять Машу с собой", next: "final_together" }
+        ]
+      },
+      go_alone: {
+        text: "Настя и Маша ушли из школы и наткнулись на заброшенный медпункт. В нём есть карта до лаборатории.",
+        choices: [
+          { text: "Следовать по карте", next: "final_together" }
+        ]
+      },
+      final_sacrifice: {
+        text: "Маша: \"Не уходи...\"\n\nНастя нашла вакцину, но поранилась. Она передаёт её группе и умирает, спасая Машу.",
+        speaker: "masha",
+        choices: []
+      },
+      final_together: {
+        text: "Маша: \"Мы сделали это, сестрёнка.\"\n\nНастя и Маша добрались до лаборатории и нашли лекарство. У них есть шанс на новую жизнь.",
+        speaker: "masha",
+        choices: []
+      }
+    };
+
+    function renderScene(key) {
+      const scene = scenes[key];
+      document.getElementById("scene").innerText = scene.text;
+      const mashaImg = document.getElementById("masha-img");
+
+      if (scene.speaker === "masha") {
+        mashaImg.classList.add("visible");
+      } else {
+        mashaImg.classList.remove("visible");
+      }
+
+      const choicesDiv = document.getElementById("choices");
+      choicesDiv.innerHTML = "";
+      scene.choices.forEach(choice => {
+        const button = document.createElement("button");
+        button.innerText = choice.text;
+        button.onclick = () => renderScene(choice.next);
+        choicesDiv.appendChild(button);
+      });
+    }
+
+    renderScene("start");
+  </script>
+</body>
+</html>
